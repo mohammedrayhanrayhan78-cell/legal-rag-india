@@ -1,0 +1,9 @@
+streamlit
+groq
+pdfplumber
+langchain
+langchain-community
+langchain-text-splitters
+chromadb
+sentence-transformers
+langchain-groq
