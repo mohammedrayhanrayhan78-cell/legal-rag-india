@@ -7,3 +7,5 @@ langchain-text-splitters
 chromadb
 sentence-transformers
 langchain-groq
+torch
+torchvision
