@@ -3,8 +3,7 @@ import streamlit as st
 import pdfplumber
 from groq import Groq
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+import numpy as np
 
 os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 
@@ -20,14 +19,23 @@ def load_rag():
             text = page.extract_text()
             if text:
                 full_text += text + "\n"
+    
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     chunks = splitter.split_text(full_text)
-    embeddings = FastEmbedEmbeddings()
-    db = Chroma.from_texts(chunks, embeddings)
-    return db
+    return chunks
+
+def simple_search(chunks, question, k=3):
+    question_words = set(question.lower().split())
+    scores = []
+    for chunk in chunks:
+        chunk_words = set(chunk.lower().split())
+        score = len(question_words & chunk_words)
+        scores.append(score)
+    top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:k]
+    return [chunks[i] for i in top_indices]
 
 with st.spinner("Loading Constitution..."):
-    db = load_rag()
+    chunks = load_rag()
 
 st.success("Ready! Ask your question below.")
 
@@ -43,8 +51,8 @@ if question := st.chat_input("Ask about the Indian Constitution..."):
     with st.chat_message("user"):
         st.write(question)
 
-    docs = db.similarity_search(question, k=3)
-    context = "\n".join([doc.page_content for doc in docs])
+    relevant_chunks = simple_search(chunks, question, k=3)
+    context = "\n".join(relevant_chunks)
 
     client = Groq()
     response = client.chat.completions.create(

@@ -2,7 +2,6 @@ streamlit
 groq
 pdfplumber
 langchain
-langchain-community
 langchain-text-splitters
-chromadb
 langchain-groq
+numpy
