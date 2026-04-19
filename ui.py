@@ -4,7 +4,7 @@ import pdfplumber
 from groq import Groq
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 
 os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 
@@ -20,10 +20,9 @@ def load_rag():
             text = page.extract_text()
             if text:
                 full_text += text + "\n"
-    
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     chunks = splitter.split_text(full_text)
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    embeddings = FastEmbedEmbeddings()
     db = Chroma.from_texts(chunks, embeddings)
     return db
 
